@@ -16,8 +16,8 @@
         "facebook/php-sdk-v4": "4.0.*"
     },
     "autoload": {
-        "psr-4": {
-            "Jonasva\\FacebookInsights\\": "src/"
+        "psr-0": {
+            "Jonasva\\FacebookInsights": "src/"
         }
     },
     "minimum-stability": "dev"

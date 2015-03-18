@@ -1,7 +1,6 @@
 <?php namespace Jonasva\FacebookInsights;
 
 use Illuminate\Support\ServiceProvider;
-use Jonasva\FacebookInsights\Facades\FacebookInsights;
 
 class FacebookInsightsServiceProvider extends ServiceProvider
 {
@@ -20,7 +19,7 @@ class FacebookInsightsServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$this->package('jonasva/facebook-insights');
+		$this->package('jonasva/laravel-facebook-insights', 'facebook-insights');
 	}
 
 	/**
@@ -30,7 +29,6 @@ class FacebookInsightsServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		// Register providers.
 		$this->app['facebook-insights'] = $this->app->share(function($app)
 		{
 			return new FacebookInsights($app['config']);

@@ -11,6 +11,6 @@ class FacebookInsights extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'FacebookInsights';
+        return 'facebook-insights';
     }
 }
