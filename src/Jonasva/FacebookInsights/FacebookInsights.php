@@ -139,6 +139,33 @@ class FacebookInsights
     }
 
     /**
+     * Get the page's posts with calculated insights for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function getPagePostsBasicInsights(\DateTime $startDate, \DateTime $endDate, $limit = 8)
+    {
+        $posts = $this->getPagePosts($startDate, $endDate, $limit);
+
+        $processedResult = [];
+
+        foreach($posts as $post) {
+            $processedResult[$post->id]['message'] = $post->message;
+            $processedResult[$post->id]['created_time'] = $post->created_time;
+            $processedResult[$post->id]['shares'] = isset($post->shares) ? $post->shares->count : 0;
+            $processedResult[$post->id]['likes'] = isset($post->likes) ? count($post->likes->data) : 0;
+            $processedResult[$post->id]['comments'] = isset($post->comments) ? count($post->comments->data) : 0;
+
+        }
+
+        return $processedResult;
+    }
+
+    /**
      * Get a post's impressions
      *
      * @param string $postId
