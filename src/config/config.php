@@ -1,4 +1,5 @@
 <?php
+
 return array(
     /*
     |--------------------------------------------------------------------------
@@ -59,4 +60,16 @@ return array(
     */
 
     'api-call-max' => 15,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache lifetime
+    |--------------------------------------------------------------------------
+    |
+    | The amount of time (in minutes) Graph API responses will be cached.
+    | If you set this to zero, the responses won't be cached at all.
+    |
+    */
+
+    'cache-lifetime' => 60 * 24,
 );

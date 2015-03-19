@@ -5,6 +5,7 @@ use Facebook\FacebookRequest;
 use Facebook\FacebookSDKException;
 
 use Illuminate\Config\Repository;
+use Cache;
 
 class FacebookInsights
 {
@@ -26,7 +27,7 @@ class FacebookInsights
     /**
      * Maximum number of days allowed in one query to facebook
      *
-     * @var integer
+     * @var int
      */
     protected $maxDaysPerQuery = 92;
 
@@ -45,6 +46,21 @@ class FacebookInsights
     }
 
     /**
+     * Get the page impressions per day for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getPageImpressionsPerDay(\DateTime $startDate, \DateTime $endDate)
+    {
+        $params = ['period' => 'day'];
+
+        return $this->getDataForDateRange($startDate, $endDate, '/insights/page_impressions', $params);
+    }
+
+    /**
      * Get the total number of page impressions for a given period
      *
      * @param \DateTime $startDate
@@ -52,17 +68,113 @@ class FacebookInsights
      *
      * @return int
      */
-    public function getTotalPageImpressions($startDate, $endDate)
+    public function getTotalPageImpressions(\DateTime $startDate, \DateTime $endDate)
     {
-        $rawData = $this->getValuesForDateRange($startDate, $endDate, '/page_impressions');
+        $rawData = $this->getPageImpressionsPerDay($startDate, $endDate);
 
-        $totalImpressions = 0;
+        return $this->calculateTotal($rawData);
+    }
 
-        foreach ($rawData as $data) {
-            $totalImpressions += $data->value;
-        }
+    /**
+     * Get the page consumptions per day for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getPageConsumptionsPerDay(\DateTime $startDate, \DateTime $endDate)
+    {
+        $params = ['period' => 'day'];
 
-        return $totalImpressions;
+        return $this->getDataForDateRange($startDate, $endDate, '/insights/page_consumptions', $params);
+    }
+
+    /**
+     * Get the total number of page consumptions for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getTotalPageConsumptions(\DateTime $startDate, \DateTime $endDate)
+    {
+        $rawData = $this->getPageConsumptionsPerDay($startDate, $endDate);
+
+        return $this->calculateTotal($rawData);
+    }
+
+    /**
+     * Get a specific insight for a page for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param string $insight
+     * @param string $period (optional)
+     *
+     * @return int
+     */
+    public function getPageInsight(\DateTime $startDate, \DateTime $endDate, $insight, $period = 'day')
+    {
+        $params = ['period' => $period];
+
+        return $this->getDataForDateRange($startDate, $endDate, '/insights/' . $insight, $params, null, false);
+    }
+
+    /**
+     * Get the page's posts for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function getPagePosts(\DateTime $startDate, \DateTime $endDate, $limit = 8)
+    {
+        $params = ['limit' => $limit];
+
+        return $this->getDataForDateRange($startDate, $endDate, '/posts', $params, null, false);
+    }
+
+    /**
+     * Get a post's impressions
+     *
+     * @param string $postId
+     *
+     * @return int
+     */
+    public function getPostImpressions($postId)
+    {
+        return $this->getPostInsight($postId, 'post_impressions')[0]->values[0]->value;
+    }
+
+    /**
+     * Get a post's consumptions
+     *
+     * @param string $postId
+     *
+     * @return int
+     */
+    public function getPostConsumptions($postId)
+    {
+        return $this->getPostInsight($postId, 'post_consumptions')[0]->values[0]->value;
+    }
+
+    /**
+     * Get a specific insight for a post
+     *
+     * @param string $insight
+     * @param string $postId
+     *
+     * @return array
+     */
+    public function getPostInsight($postId, $insight)
+    {
+        $queryResult = $this->performGraphCall('/insights/' . $insight, [], $postId);
+
+        return $queryResult->getProperty('data')->asArray();
     }
 
     /**
@@ -75,7 +187,7 @@ class FacebookInsights
      *
      * @return GraphObject
      */
-    public function performGraphCall($query, $params = [], $method = 'GET', $object = null)
+    public function performGraphCall($query, $params = [], $object = null, $method = 'GET')
     {
         if (count($params) > 0) {
             $i = 0;
@@ -92,11 +204,24 @@ class FacebookInsights
             }
         }
 
-        $object ?: $object = '/' . $this->config->get('facebook-insights::page-id') . '/insights';
+        $object ? $object = '/' . $object : $object = '/' . $this->config->get('facebook-insights::page-id');
 
-        return (new FacebookRequest(
-            $this->session, $method, $object . $query
-        ))->execute()->getGraphObject();
+        $cacheName = $this->determineCacheName([$query, $method, $object]);
+
+        if ($this->useCache() && Cache::has($cacheName)) {
+            $response = Cache::get($cacheName);
+        }
+        else {
+            $response = (new FacebookRequest(
+                $this->session, $method, $object . $query
+            ))->execute()->getGraphObject();
+
+            if ($this->useCache()) {
+                Cache::put($cacheName, $response, $this->config->get('facebook-insights::cache-lifetime'));
+            }
+        }
+
+        return $response;
     }
 
     /**
@@ -105,10 +230,12 @@ class FacebookInsights
      * @param \DateTime $startDate
      * @param \DateTime $endDate
      * @param string $query
+     * @param array $params
+     * $param bool $values (return an array with values or not)
      *
      * @return array
      */
-    private function getValuesForDateRange($startDate, $endDate, $query)
+    public function getDataForDateRange(\DateTime $startDate, \DateTime $endDate, $query, $params = [], $object = null, $values = true)
     {
         $diff = $startDate->diff($endDate)->days;
 
@@ -135,29 +262,67 @@ class FacebookInsights
                 $intervalEndDate = clone $endDate;
                 $intervalEndDate->sub(new \DateInterval('P' . ($this->maxDaysPerQuery * ($i - 1)) . 'D'));
 
-                $params = [
-                    'since' => strtotime($intervalStartDate->format('Y-m-d')),
-                    'until' => strtotime($intervalEndDate->format('Y-m-d')),
-                ];
+                $params['since'] = strtotime($intervalStartDate->format('Y-m-d'));
+                $params['until'] = strtotime($intervalEndDate->format('Y-m-d'));
 
+                $queryResult = $this->performGraphCall($query, $params, $object)->getProperty('data')->asArray();
 
-                $queryResult = $this->performGraphCall($query, $params);
+                !$values ?: $queryResult = $queryResult[0]->values;
 
-                $data = array_merge($data, $queryResult->getProperty('data')->asArray()[0]->values);
+                $data = array_merge($data, $queryResult);
             }
         }
         else {
-            $params = [
-                'since' => strtotime($startDate->format('Y-m-d')),
-                'until' => strtotime($endDate->format('Y-m-d')),
-            ];
+            $params['since'] = strtotime($startDate->format('Y-m-d'));
+            $params['until'] = strtotime($endDate->format('Y-m-d'));
 
-            $queryResult = $this->performGraphCall($query, $params);
+            $queryResult = $this->performGraphCall($query, $params, $object)->getProperty('data')->asArray();
 
-            $data = $queryResult->getProperty('data')->asArray()[0]->values;
+            !$values ?: $queryResult = $queryResult[0]->values;
+
+            $data = $queryResult;
         }
 
         return $data;
+    }
+
+    /**
+     * Calculate totals from an array of raw data by period
+     *
+     * @param array $rawData
+     *
+     * @return int
+     */
+    private function calculateTotal(array $rawData)
+    {
+        $total = 0;
+
+        foreach ($rawData as $data) {
+            $total += $data->value;
+        }
+
+        return $total;
+    }
+
+    /**
+     * Determine the cache name for the set of query properties given
+     *
+     * @param array $properties
+     * @return string
+     */
+    private function determineCacheName(array $properties)
+    {
+        return 'jonasva.facebook-insights.' . md5(serialize($properties));
+    }
+
+    /**
+     * Determine whether or not to cache API responses
+     *
+     * @return bool
+     */
+    private function useCache()
+    {
+        return $this->config->get('facebook-insights::cache-lifetime') > 0;
     }
 
 } 
