@@ -42,6 +42,167 @@ $ php artisan config:publish jonasva/laravel-facebook-insights
 
 A configuration file will be published to `app/config/packages/jonasva/laravel-facebook-insights/config.php`
 
+### Config
+
+#### Facebook App and Page information
+
+To use this package, you'll need to setup your Facebook App ID, App secret, (permanent) access token and Page ID. For more information about this check the config file.
+
+#### Cache
+
+Facebook GraphApi responses get cache for 1 day by default. You can change this by altering the `cache-lifetime`.
+
 ## Usage
 
-Coming soon
+This package currently provides insights for a Page and Post objects. That said, any other OpenGraph queries can also be done by simply using the following method:
+```php
+    /**
+     * Construct a facebook request
+     *
+     * @param string $query
+     * @param array $params (optional)
+     * @param string $method (optional)
+     * @param string $object (optional)
+     *
+     * @return GraphObject
+     */
+    public function performGraphCall($query, $params = [], $object = null, $method = 'GET')
+```
+
+### Page Insights
+
+Get a page's impressions (The total number of impressions seen of any content associated with your Page) per day for a given period
+```php
+    /**
+     * Get the page impressions per day for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getPageImpressionsPerDay(\DateTime $startDate, \DateTime $endDate)
+```
+
+Get the total number of page impressions for a given period
+```php
+    /**
+     * Get the total number of page impressions for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getTotalPageImpressions(\DateTime $startDate, \DateTime $endDate)
+```
+
+Get a page's consumptions (The number of times people clicked on any of your content) per day for a given period
+```php
+    /**
+     * Get the page consumptions per day for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getPageConsumptionsPerDay(\DateTime $startDate, \DateTime $endDate)
+    {
+```
+
+Get the total number of page consumptions for a given period
+```php
+    /**
+     * Get the total number of page consumptions for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getTotalPageConsumptions(\DateTime $startDate, \DateTime $endDate)
+```
+
+Get a specific insight for a page for a given period. Insights can be found here: https://developers.facebook.com/docs/graph-api/reference/v2.2/insights#page_impressions
+```php
+    /**
+     * Get a specific insight for a page for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param string $insight
+     * @param string $period (optional)
+     *
+     * @return int
+     */
+    public function getPageInsight(\DateTime $startDate, \DateTime $endDate, $insight, $period = 'day')
+```
+
+Get a page's posts for a given period. This is not really an insight, but is needed get post ID's which can later be used to collect post insights.
+```php
+    /**
+     * Get the page's posts for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function getPagePosts(\DateTime $startDate, \DateTime $endDate, $limit = null)
+```
+
+### Post Insights
+
+Post specific insights can only be collected by period `lifetime`, so no date range needs to be given.
+
+Get a post's impressions
+```php
+    /**
+     * Get a post's impressions
+     *
+     * @param string $postId
+     *
+     * @return int
+     */
+    public function getPostImpressions($postId)
+```
+
+Get a post's consumptions
+```php
+    /**
+     * Get a post's consumptions
+     *
+     * @param string $postId
+     *
+     * @return int
+     */
+    public function getPostConsumptions($postId)
+```
+
+Get a specific insight for a post. Post insights can be found here: https://developers.facebook.com/docs/graph-api/reference/v2.2/insights#post_impressions
+```php
+    /**
+     * Get a specific insight for a post
+     *
+     * @param string $insight
+     * @param string $postId
+     *
+     * @return array
+     */
+    public function getPostInsight($postId, $insight)
+```
+
+Get the page's posts with calculated insights for a given period
+```php
+     * Get the page's posts with calculated insights for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function getPagePostsBasicInsights(\DateTime $startDate, \DateTime $endDate, $limit = null)
+```
