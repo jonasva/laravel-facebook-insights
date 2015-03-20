@@ -131,9 +131,9 @@ class FacebookInsights
      *
      * @return array
      */
-    public function getPagePosts(\DateTime $startDate, \DateTime $endDate, $limit = 8)
+    public function getPagePosts(\DateTime $startDate, \DateTime $endDate, $limit = null)
     {
-        $params = ['limit' => $limit];
+        $params = $limit ? ['limit' => $limit] : [];
 
         return $this->getDataForDateRange($startDate, $endDate, '/posts', $params, null, false);
     }
@@ -147,19 +147,18 @@ class FacebookInsights
      *
      * @return array
      */
-    public function getPagePostsBasicInsights(\DateTime $startDate, \DateTime $endDate, $limit = 8)
+    public function getPagePostsBasicInsights(\DateTime $startDate, \DateTime $endDate, $limit = null)
     {
         $posts = $this->getPagePosts($startDate, $endDate, $limit);
 
         $processedResult = [];
 
         foreach($posts as $post) {
-            $processedResult[$post->id]['message'] = $post->message;
+            $processedResult[$post->id]['message'] = isset($post->message) ? $post->message : $post->story;
             $processedResult[$post->id]['created_time'] = $post->created_time;
             $processedResult[$post->id]['shares'] = isset($post->shares) ? $post->shares->count : 0;
             $processedResult[$post->id]['likes'] = isset($post->likes) ? count($post->likes->data) : 0;
             $processedResult[$post->id]['comments'] = isset($post->comments) ? count($post->comments->data) : 0;
-
         }
 
         return $processedResult;
@@ -297,6 +296,11 @@ class FacebookInsights
                 !$values ?: $queryResult = $queryResult[0]->values;
 
                 $data = array_merge($data, $queryResult);
+
+                if (isset($params['limit']) && count($data) >= $params['limit']) {
+                    $data = array_slice($data, 0, $params['limit']);
+                    break;
+                }
             }
         }
         else {
