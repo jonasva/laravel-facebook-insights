@@ -54,7 +54,7 @@ Facebook GraphApi responses get cache for 1 day by default. You can change this 
 
 ## Usage
 
-This package currently provides insights for a Page and Post objects. That said, any other OpenGraph queries can also be done by simply using the following method:
+This package currently provides insights for Page and Post objects. That said, any other OpenGraph queries can also be done by simply using the following method:
 ```php
     /**
      * Construct a facebook request
@@ -196,6 +196,7 @@ Get a specific insight for a post. Post insights can be found here: https://deve
 
 Get the page's posts with calculated insights for a given period
 ```php
+    /**
      * Get the page's posts with calculated insights for a given period
      *
      * @param \DateTime $startDate
