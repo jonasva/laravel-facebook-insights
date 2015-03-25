@@ -79,7 +79,7 @@ Get a page's impressions (The total number of impressions seen of any content as
      * @param \DateTime $startDate
      * @param \DateTime $endDate
      *
-     * @return int
+     * @return array
      */
     public function getPageImpressionsPerDay(\DateTime $startDate, \DateTime $endDate)
 ```
@@ -105,7 +105,7 @@ Get a page's consumptions (The number of times people clicked on any of your con
      * @param \DateTime $startDate
      * @param \DateTime $endDate
      *
-     * @return int
+     * @return array
      */
     public function getPageConsumptionsPerDay(\DateTime $startDate, \DateTime $endDate)
     {

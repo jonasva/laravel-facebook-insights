@@ -51,7 +51,7 @@ class FacebookInsights
      * @param \DateTime $startDate
      * @param \DateTime $endDate
      *
-     * @return int
+     * @return array
      */
     public function getPageImpressionsPerDay(\DateTime $startDate, \DateTime $endDate)
     {
@@ -81,7 +81,7 @@ class FacebookInsights
      * @param \DateTime $startDate
      * @param \DateTime $endDate
      *
-     * @return int
+     * @return array
      */
     public function getPageConsumptionsPerDay(\DateTime $startDate, \DateTime $endDate)
     {
@@ -113,7 +113,7 @@ class FacebookInsights
      * @param string $insight
      * @param string $period (optional)
      *
-     * @return int
+     * @return array
      */
     public function getPageInsight(\DateTime $startDate, \DateTime $endDate, $insight, $period = 'day')
     {
@@ -154,11 +154,13 @@ class FacebookInsights
         $processedResult = [];
 
         foreach($posts as $post) {
+            $insight = $this->getPostInsight($post->id, 'post_story_adds_by_action_type')[0]->values[0]->value;
+
             $processedResult[$post->id]['message'] = isset($post->message) ? $post->message : $post->story;
             $processedResult[$post->id]['created_time'] = $post->created_time;
-            $processedResult[$post->id]['shares'] = isset($post->shares) ? $post->shares->count : 0;
-            $processedResult[$post->id]['likes'] = isset($post->likes) ? count($post->likes->data) : 0;
-            $processedResult[$post->id]['comments'] = isset($post->comments) ? count($post->comments->data) : 0;
+            $processedResult[$post->id]['likes'] = isset($insight->like) ? $insight->like : 0;
+            $processedResult[$post->id]['shares'] = isset($insight->share) ? $insight->share : 0;
+            $processedResult[$post->id]['comments'] = isset($insight->comment) ? $insight->comment : 0;
         }
 
         return $processedResult;
