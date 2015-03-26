@@ -46,6 +46,46 @@ class FacebookInsights
     }
 
     /**
+     * Get the total amount of page fans (people who liked the page)
+     *
+     * @return int
+     */
+    public function getPageTotalFans()
+    {
+        return array_pop($this->performGraphCall('/insights/page_fans')->getProperty('data')->asArray()[0]->values)->value;
+    }
+
+    /**
+     * Get new page fans per day for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getPageNewFansPerDay(\DateTime $startDate, \DateTime $endDate)
+    {
+        $params = ['period' => 'day'];
+
+        return $this->getDataForDateRange($startDate, $endDate, '/insights/page_fan_adds', $params);
+    }
+
+    /**
+     * Get the total number of new page fans for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getPageTotalNewFans(\DateTime $startDate, \DateTime $endDate)
+    {
+        $rawData = $this->getPageNewFansPerDay($startDate, $endDate);
+
+        return $this->calculateTotal($rawData);
+    }
+
+    /**
      * Get the page impressions per day for a given period
      *
      * @param \DateTime $startDate
@@ -68,7 +108,7 @@ class FacebookInsights
      *
      * @return int
      */
-    public function getTotalPageImpressions(\DateTime $startDate, \DateTime $endDate)
+    public function getPageTotalImpressions(\DateTime $startDate, \DateTime $endDate)
     {
         $rawData = $this->getPageImpressionsPerDay($startDate, $endDate);
 
@@ -98,7 +138,7 @@ class FacebookInsights
      *
      * @return int
      */
-    public function getTotalPageConsumptions(\DateTime $startDate, \DateTime $endDate)
+    public function getPageTotalConsumptions(\DateTime $startDate, \DateTime $endDate)
     {
         $rawData = $this->getPageConsumptionsPerDay($startDate, $endDate);
 
@@ -293,11 +333,13 @@ class FacebookInsights
                 $params['since'] = strtotime($intervalStartDate->format('Y-m-d'));
                 $params['until'] = strtotime($intervalEndDate->format('Y-m-d'));
 
-                $queryResult = $this->performGraphCall($query, $params, $object)->getProperty('data')->asArray();
+                $queryResult = $this->performGraphCall($query, $params, $object)->getProperty('data');
 
-                !$values ?: $queryResult = $queryResult[0]->values;
-
-                $data = array_merge($data, $queryResult);
+                if (!is_null($queryResult)) {
+                    $queryResult = $queryResult->asArray();
+                    $queryResult = $values && isset($queryResult[0]) ? $queryResult[0]->values : $queryResult;
+                    $data = array_merge($data, $queryResult);
+                }
 
                 if (isset($params['limit']) && count($data) >= $params['limit']) {
                     $data = array_slice($data, 0, $params['limit']);
@@ -309,11 +351,14 @@ class FacebookInsights
             $params['since'] = strtotime($startDate->format('Y-m-d'));
             $params['until'] = strtotime($endDate->format('Y-m-d'));
 
-            $queryResult = $this->performGraphCall($query, $params, $object)->getProperty('data')->asArray();
+            $queryResult = $this->performGraphCall($query, $params, $object)->getProperty('data');
 
-            !$values ?: $queryResult = $queryResult[0]->values;
+            if (!is_null($queryResult)) {
+                $queryResult = $queryResult->asArray();
+                $queryResult = $values && isset($queryResult[0]) ? $queryResult[0]->values : $queryResult;
+                $data = $queryResult;
+            }
 
-            $data = $queryResult;
         }
 
         return $data;

@@ -54,6 +54,17 @@ Facebook GraphApi responses get cache for 1 day by default. You can change this 
 
 ## Usage
 
+The package contains several useful methods to fetch facebook insights with the OpenGraph API. Methods can be called by using the facade `FacebookInsights`.
+For example:
+```php
+    $startDate = new \DateTime('2015-03-15');
+    $endDate = new \DateTime('2015-03-25');
+    // fetch your page's total impressions for a given period
+    $totalImpressions = FacebookInsights::getPageTotalImpressions($startDate, $endDate); 
+```
+
+## Methods
+
 This package currently provides insights for Page and Post objects. That said, any other OpenGraph queries can also be done by simply using the following method:
 ```php
     /**
@@ -70,6 +81,42 @@ This package currently provides insights for Page and Post objects. That said, a
 ```
 
 ### Page Insights
+
+Get the total amount of page fans (aka followers, people who liked the page)
+```php
+    /**
+     * Get the total amount of page fans (people who liked the page)
+     *
+     * @return int
+     */
+    public function getPageTotalFans()
+```
+
+Get new fans per day for a given period
+```php
+    /**
+     * Get new page fans per day for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getPageNewFansPerDay(\DateTime $startDate, \DateTime $endDate)
+```
+
+Get the total number of new page fans for a given period
+```php
+    /**
+     * Get the total number of new page fans for a given period
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return int
+     */
+    public function getPageTotalNewFans(\DateTime $startDate, \DateTime $endDate)
+```
 
 Get a page's impressions (The total number of impressions seen of any content associated with your Page) per day for a given period
 ```php
@@ -94,7 +141,7 @@ Get the total number of page impressions for a given period
      *
      * @return int
      */
-    public function getTotalPageImpressions(\DateTime $startDate, \DateTime $endDate)
+    public function getPageTotalImpressions(\DateTime $startDate, \DateTime $endDate)
 ```
 
 Get a page's consumptions (The number of times people clicked on any of your content) per day for a given period
@@ -121,7 +168,7 @@ Get the total number of page consumptions for a given period
      *
      * @return int
      */
-    public function getTotalPageConsumptions(\DateTime $startDate, \DateTime $endDate)
+    public function getPageTotalConsumptions(\DateTime $startDate, \DateTime $endDate)
 ```
 
 Get a specific insight for a page for a given period. Insights can be found here: https://developers.facebook.com/docs/graph-api/reference/v2.2/insights#page_impressions
@@ -139,7 +186,7 @@ Get a specific insight for a page for a given period. Insights can be found here
     public function getPageInsight(\DateTime $startDate, \DateTime $endDate, $insight, $period = 'day')
 ```
 
-Get a page's posts for a given period. This is not really an insight, but is needed get post ID's which can later be used to collect post insights.
+Get a page's posts for a given period. This is not really an insight, but is needed to get post ID's which can later be used to collect post insights.
 ```php
     /**
      * Get the page's posts for a given period
