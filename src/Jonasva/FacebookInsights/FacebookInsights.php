@@ -146,6 +146,51 @@ class FacebookInsights
     }
 
     /**
+     * Get a page's positive feedback per day for a given period
+     * The following actions are categorized as positive feedback:
+     * like, comment, link (share), rsvp (respond to an event), claim, answer
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getPagePositiveFeedbackPerDay(\DateTime $startDate, \DateTime $endDate)
+    {
+        $params = ['period' => 'day'];
+
+        return $this->getDataForDateRange($startDate, $endDate, '/insights/page_positive_feedback_by_type', $params);
+    }
+
+    /**
+     * Get a page's accumulated positive feedback for a given period
+     * The following actions are categorized as positive feedback:
+     * like, comment, link (share), rsvp (respond to an event), claim, answer
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getPageTotalPositiveFeedback(\DateTime $startDate, \DateTime $endDate)
+    {
+        $rawData = $this->getPagePositiveFeedbackPerDay($startDate, $endDate);
+
+        $processedResult['likes'] = $processedResult['shares'] = $processedResult['comments'] = $processedResult['rsvps'] = $processedResult['claims'] = $processedResult['answers'] = 0;
+
+        foreach ($rawData as $feedback) {
+            $processedResult['likes'] += $feedback->value->like;
+            $processedResult['shares'] += $feedback->value->link;
+            $processedResult['comments'] += $feedback->value->comment;
+            $processedResult['rsvps'] += $feedback->value->rsvp;
+            $processedResult['claims'] += $feedback->value->claim;
+            $processedResult['answers'] += $feedback->value->answer;
+        }
+
+        return $processedResult;
+    }
+
+    /**
      * Get a specific insight for a page for a given period
      *
      * @param \DateTime $startDate

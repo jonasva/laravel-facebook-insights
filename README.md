@@ -10,7 +10,7 @@ To get the latest version of FacebookInsights require it in your `composer.json`
 "jonasva/laravel-facebook-insights": "dev-master"
 ~~~
 
-Run `composer update jonasva/laravel-facebook-insights to install it.
+Run `composer update jonasva/laravel-facebook-insights` to install it.
 
 Once FacebookInsights is installed you need to register its service provider with your application. Open `app/config/app.php` and find the `providers` key.
 
@@ -60,7 +60,7 @@ For example:
     $startDate = new \DateTime('2015-03-15');
     $endDate = new \DateTime('2015-03-25');
     // fetch your page's total impressions for a given period
-    $totalImpressions = FacebookInsights::getPageTotalImpressions($startDate, $endDate); 
+    $totalImpressions = FacebookInsights::getPageTotalImpressions($startDate, $endDate);
 ```
 
 ## Methods
@@ -169,6 +169,36 @@ Get the total number of page consumptions for a given period
      * @return int
      */
     public function getPageTotalConsumptions(\DateTime $startDate, \DateTime $endDate)
+```
+
+Get like, comment, share, rsvp, claim and answer counts for a page's posts grouped per day for a given period
+```php
+    /**
+     * Get a page's positive feedback per day for a given period
+     * The following actions are categorized as positive feedback:
+     * like, comment, link (share), rsvp (respond to an event), claim, answer
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getPagePositiveFeedbackPerDay(\DateTime $startDate, \DateTime $endDate)
+```
+
+Get accumulated (total) like, comment, share, rsvp, claim and answer counts for a page's posts grouped per day for a given period
+```php
+    /**
+     * Get a page's accumulated positive feedback for a given period
+     * The following actions are categorized as positive feedback:
+     * like, comment, link (share), rsvp (respond to an event), claim, answer
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getPageTotalPositiveFeedback(\DateTime $startDate, \DateTime $endDate)
 ```
 
 Get a specific insight for a page for a given period. Insights can be found here: https://developers.facebook.com/docs/graph-api/reference/v2.2/insights#page_impressions
