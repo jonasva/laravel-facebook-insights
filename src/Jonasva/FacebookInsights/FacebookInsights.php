@@ -15,21 +15,28 @@ class FacebookInsights
      *
      * @var \Facebook\FacebookSession
      */
-    protected $session;
+    private $session;
 
     /**
      * Illuminate config repository instance.
      *
      * @var \Illuminate\Config\Repository
      */
-    protected $config;
+    private $config;
+
+    /**
+     * Facebook page id
+     *
+     * @var string
+     */
+    private $pageId;
 
     /**
      * Maximum number of days allowed in one query to facebook
      *
      * @var int
      */
-    protected $maxDaysPerQuery = 92;
+    private $maxDaysPerQuery = 92;
 
     /**
      * Create a new FacebookInsights instance.
@@ -39,10 +46,26 @@ class FacebookInsights
     public function __construct(Repository $config)
     {
         $this->config = $config;
+        $this->pageId = $this->config->get('facebook-insights::page-id');
 
         FacebookSession::setDefaultApplication($this->config->get('facebook-insights::app-id'), $this->config->get('facebook-insights::app-secret'));
 
-        $this->session = new FacebookSession($this->config->get('facebook-insights::access-token'));
+        $this->session[$this->pageId] = new FacebookSession($this->config->get('facebook-insights::access-token'));
+    }
+
+    /*
+     * Switch to another page to get insights of
+     *
+     * @param string $pageId
+     * @param string $accessToken
+     */
+    public function switchPage($pageId, $accessToken)
+    {
+        $this->pageId = $pageId;
+
+        if (!isset($this->session[$this->pageId])) {
+            $this->session[$this->pageId] = new FacebookSession($accessToken);
+        }
     }
 
     /**
@@ -239,13 +262,17 @@ class FacebookInsights
         $processedResult = [];
 
         foreach($posts as $post) {
-            $insight = $this->getPostInsight($post->id, 'post_story_adds_by_action_type')[0]->values[0]->value;
+            $insight = $this->getPostInsight($post->id, 'post_story_adds_by_action_type');
 
             $processedResult[$post->id]['message'] = isset($post->message) ? $post->message : $post->story;
             $processedResult[$post->id]['created_time'] = $post->created_time;
-            $processedResult[$post->id]['likes'] = isset($insight->like) ? $insight->like : 0;
-            $processedResult[$post->id]['shares'] = isset($insight->share) ? $insight->share : 0;
-            $processedResult[$post->id]['comments'] = isset($insight->comment) ? $insight->comment : 0;
+
+            if (!empty($insight)) {
+                $insight = $insight[0]->values[0]->value;
+                $processedResult[$post->id]['likes'] = isset($insight->like) ? $insight->like : 0;
+                $processedResult[$post->id]['shares'] = isset($insight->share) ? $insight->share : 0;
+                $processedResult[$post->id]['comments'] = isset($insight->comment) ? $insight->comment : 0;
+            }
         }
 
         return $processedResult;
@@ -317,7 +344,7 @@ class FacebookInsights
             }
         }
 
-        $object ? $object = '/' . $object : $object = '/' . $this->config->get('facebook-insights::page-id');
+        $object ? $object = '/' . $object : $object = '/' . $this->pageId;
 
         $cacheName = $this->determineCacheName([$query, $method, $object]);
 
@@ -326,7 +353,7 @@ class FacebookInsights
         }
         else {
             $response = (new FacebookRequest(
-                $this->session, $method, $object . $query
+                $this->session[$this->pageId], $method, $object . $query
             ))->execute()->getGraphObject();
 
             if ($this->useCache()) {

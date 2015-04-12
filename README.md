@@ -230,6 +230,25 @@ Get a page's posts for a given period. This is not really an insight, but is nee
     public function getPagePosts(\DateTime $startDate, \DateTime $endDate, $limit = null)
 ```
 
+### Switching to another page
+
+It is also possible to dynamically switch to another page, to fetch its insights / posts. You can use the `switchPage` for that:
+
+```php
+    /*
+     * Switch to another page to get insights of
+     *
+     * @param string $pageId
+     * @param string $accessToken
+     */
+    public function switchPage($pageId, $accessToken)
+```
+
+Example:
+```php
+    FacebookInsights::switchPage('other page id', 'other page's permanent access token');
+```
+
 ### Post Insights
 
 Post specific insights can only be collected by period `lifetime`, so no date range needs to be given.
