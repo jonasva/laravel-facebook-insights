@@ -232,7 +232,7 @@ Get a page's posts for a given period. This is not really an insight, but is nee
 
 ### Switching to another page
 
-It is also possible to dynamically switch to another page, to fetch its insights / posts. You can use the `switchPage` for that:
+It is also possible to dynamically switch to another page, to fetch its insights / posts. You can use the `switchPage` method for that:
 
 ```php
     /*
