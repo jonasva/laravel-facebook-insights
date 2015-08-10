@@ -1,24 +1,28 @@
 {
-    "name": "jonasva/laravel-facebook-insights",
-    "description": "Facebook page insights integration with Laravel",
-    "homepage": "http://github.com/jonasva/laravel-facebook-insights",
-    "keywords": ["facebook", "insights", "laravel"],
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Jonas Van Assche",
-            "email": "jonas.vanassche@gmail.com"
-        }
-    ],
-    "require": {
-        "php": ">=5.4.0",
-        "illuminate/support": "~4.0",
-        "facebook/php-sdk-v4": "4.0.*"
-    },
-    "autoload": {
-        "psr-0": {
-            "Jonasva\\FacebookInsights": "src/"
-        }
-    },
-    "minimum-stability": "dev"
+	"name": "jonasva/laravel-facebook-insights",
+	"description": "Facebook page insights integration with Laravel",
+	"homepage": "http://github.com/jonasva/laravel-facebook-insights",
+	"keywords": [
+		"facebook",
+		"insights",
+		"laravel"
+	],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Jonas Van Assche",
+			"email": "jonas.vanassche@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"illuminate/support": "~5.0",
+		"facebook/php-sdk-v4": "4.0.*"
+	},
+	"autoload": {
+		"psr-0": {
+			"Jonasva\\FacebookInsights": "src/"
+		}
+	},
+	"minimum-stability": "dev"
 }

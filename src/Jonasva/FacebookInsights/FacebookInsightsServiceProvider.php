@@ -19,7 +19,9 @@ class FacebookInsightsServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$this->package('jonasva/laravel-facebook-insights', 'facebook-insights');
+		$this->publishes([
+			__DIR__.'/../../config/config.php' => config_path('facebook-insights.php'),
+		]);
 	}
 
 	/**
