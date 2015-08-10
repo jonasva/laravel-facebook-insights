@@ -6,9 +6,13 @@ FacebookInsights provides a quick way to access insights of a facebook page with
 
 To get the latest version of FacebookInsights require it in your `composer.json` file.
 
+For Laravel 4:
+
 ~~~
-"jonasva/laravel-facebook-insights": "dev-master"
+"jonasva/laravel-facebook-insights": "dev-laravel4"
 ~~~
+
+*(For Laravel 5, please check the documentation on the master branch of this repository)*
 
 Run `composer update jonasva/laravel-facebook-insights` to install it.
 
