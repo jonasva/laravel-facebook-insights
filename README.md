@@ -10,24 +10,26 @@ To get the latest version of FacebookInsights require it in your `composer.json`
 "jonasva/laravel-facebook-insights": "dev-master"
 ~~~
 
+*(For Laravel 4, please check the documentation of the Laravel4 branch of this repository)*
+
 Run `composer update jonasva/laravel-facebook-insights` to install it.
 
-Once FacebookInsights is installed you need to register its service provider with your application. Open `app/config/app.php` and find the `providers` key.
+Once FacebookInsights is installed you need to register its service provider with your application. Open `config/app.php` and find the `providers` key.
 
 ~~~php
 'providers' => array(
 
-    'Jonasva\FacebookInsights\FacebookInsightsServiceProvider',
+    Jonasva\FacebookInsights\FacebookInsightsServiceProvider::class,
 
 )
 ~~~
 
-A Facade for easy access is also included. You can register the facade in the `aliases` key of your `app/config/app.php` file.
+A Facade for easy access is also included. You can register the facade in the `aliases` key of your `config/app.php` file.
 
 ~~~php
 'aliases' => array(
 
-    'FacebookInsights' => 'Jonasva\FacebookInsights\Facades\FacebookInsights',
+    'FacebookInsights' => Jonasva\FacebookInsights\Facades\FacebookInsights::class,
 
 )
 ~~~
@@ -37,10 +39,10 @@ A Facade for easy access is also included. You can register the facade in the `a
 Run this on the command line from the root of your project:
 
 ~~~
-$ php artisan config:publish jonasva/laravel-facebook-insights
+$ php artisan vendor:publish
 ~~~
 
-A configuration file will be published to `app/config/packages/jonasva/laravel-facebook-insights/config.php`
+A configuration file will be published to `config/facebook-insights.php`
 
 ### Config
 
@@ -57,6 +59,10 @@ Facebook GraphApi responses get cache for 1 day by default. You can change this 
 The package contains several useful methods to fetch facebook insights with the OpenGraph API. Methods can be called by using the facade `FacebookInsights`.
 For example:
 ```php
+    use FacebookInsights; // this goes above your class declaration
+
+    // ...
+
     $startDate = new \DateTime('2015-03-15');
     $endDate = new \DateTime('2015-03-25');
     // fetch your page's total impressions for a given period
